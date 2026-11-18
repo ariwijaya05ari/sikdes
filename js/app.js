@@ -170,7 +170,7 @@
   };
   A.scopeBanner = function (u) {
     if (!u.rw) return '<div class="note er scope" role="alert"><span>' + ico('shield', 's') + '</span><div><b>Wilayah akun belum diatur.</b> Akun ini belum memiliki RW sehingga tidak dapat melihat data warga. Hubungi admin desa untuk mengisi RT/RW pada menu Pengguna.</div></div>';
-    return '<div class="note scope" role="status"><span>' + ico('shield', 's') + '</span><div><b>Wilayah Anda: ' + A.wilayahLabel(u) + '.</b> Anda hanya melihat dan mengelola data warga di wilayah ini; data RT/RW lain tidak ditampilkan.</div></div>';
+    return '<div class="note scope" role="status"><span>' + ico('shield', 's') + '</span><div><b>Wilayah Anda: ' + A.wilayahLabel(u) + '.</b> Anda dapat menambah, mengubah, dan mencatat mutasi warga di wilayah ini. Data RT/RW lain tidak ditampilkan dan tidak dapat diubah.</div></div>';
   };
   A.refreshBrand = function () { var d = A.desa || {}; U.$$('.brand .lg').forEach(function (e) { e.innerHTML = U.logo(d); e.classList.toggle('has', !!d.logo); }); };
 
