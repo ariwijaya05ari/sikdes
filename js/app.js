@@ -87,7 +87,7 @@
     document.title = (def.title ? def.title + ' · ' : '') + ((A.desa && A.desa.nama_desa) || 'SIPAKDES') + ' — SIPAKDES';
     prog(true); w.scrollTo(0, 0);
     var ctx = { user: A.user, params: params, qs: loc.qs, el: el, V: function (a, d, r, o) { return A.V(el, a, d, r, o); } };
-    var out; try { out = def.render(el, ctx); } catch (e) { console.error(e); el.innerHTML = '<div class="card p">' + errBox(e) + '</div>'; }
+    var out; try { out = def.render(el, ctx); if (needShell && A.user.role === 'rt' && def.menu !== 'profil') el.insertAdjacentHTML('beforebegin', A.scopeBanner(A.user)); } catch (e) { console.error(e); el.innerHTML = '<div class="card p">' + errBox(e) + '</div>'; }
     Promise.resolve(out).then(function (c) { if (typeof c === 'function') A.leave(c); }).catch(function (e) { console.error(e); }).then(function () { if (navId === A.navId) prog(false); });
     // jaring pengaman: progres tidak menggantung bila halaman menunggu jaringan
     setTimeout(function () { if (navId === A.navId) prog(false); }, 600);
@@ -106,7 +106,7 @@
       '<div class="main"><header class="top"><button class="ib burger" aria-label="Buka menu" id="burger">' + ico('menu', 'l') + '</button><div class="crumb"><span class="hide-m">' + esc(desa.nama_desa || 'Pemerintah Desa') + '</span>' + ico('chr', 's') + '<b id="crumb"></b></div>' +
       (u.role !== 'warga' ? '<div class="sch ig" style="position:relative"><span>' + ico('search') + '</span><input class="inp" id="gsearch" placeholder="Cari NIK, No. KK, atau nama warga…" autocomplete="off" aria-label="Pencarian global"><div id="gres" class="card hide" style="position:absolute;left:0;right:0;top:44px;max-height:360px;overflow:auto;z-index:50"></div></div>' : '<span class="grow"></span>') +
       '<button class="ib" id="bell" aria-label="Pemberitahuan">' + ico('bell') + '<span class="dot hide" id="belldot" style="position:absolute;margin:-12px 0 0 10px;background:var(--er)"></span></button>' +
-      '<div class="user"><div class="meta" style="text-align:right"><div class="b" style="line-height:1.2">' + esc(u.nama) + '</div><span class="bdg gd xs">' + esc(ROLE_LBL[u.role] || u.role) + '</span></div><div class="av">' + esc(U.ini(u.nama)) + '</div></div></header><main class="page" id="view" tabindex="-1"></main></div></div><div class="scrim" id="scrim"></div>' + bn;
+      '<div class="user"><div class="meta" style="text-align:right"><div class="b" style="line-height:1.2">' + esc(u.nama) + '</div><span class="bdg gd xs">' + esc(ROLE_LBL[u.role] || u.role) + (u.role === 'rt' && u.rw ? ' · ' + (u.rt ? 'RT ' + esc(u.rt) + '/' : '') + 'RW ' + esc(u.rw) : '') + '</span></div><div class="av">' + esc(U.ini(u.nama)) + '</div></div></header><main class="page" id="view" tabindex="-1"></main></div></div><div class="scrim" id="scrim"></div>' + bn;
     var side = $('#side'), scrim = $('#scrim');
     $('#burger').onclick = function () { side.classList.add('open'); scrim.classList.add('on'); };
     scrim.onclick = closeSide;
@@ -163,6 +163,15 @@
     A.counts.verif = d.verifData || 0; paintBadges();
   }
   A.afterSummary = afterSummary; A.afterWarga = afterWarga; A.reroute = route;
+  /** Wilayah akun Ketua RT/RW: "RT 03 / RW 02" atau "Seluruh RW 02" (Ketua RW). */
+  A.wilayahLabel = function (u) {
+    if (!u || !u.rw) return '';
+    return u.rt ? 'RT ' + esc(u.rt) + ' / RW ' + esc(u.rw) : 'Seluruh RT di RW ' + esc(u.rw);
+  };
+  A.scopeBanner = function (u) {
+    if (!u.rw) return '<div class="note er scope" role="alert"><span>' + ico('shield', 's') + '</span><div><b>Wilayah akun belum diatur.</b> Akun ini belum memiliki RW sehingga tidak dapat melihat data warga. Hubungi admin desa untuk mengisi RT/RW pada menu Pengguna.</div></div>';
+    return '<div class="note scope" role="status"><span>' + ico('shield', 's') + '</span><div><b>Wilayah Anda: ' + A.wilayahLabel(u) + '.</b> Anda hanya melihat dan mengelola data warga di wilayah ini; data RT/RW lain tidak ditampilkan.</div></div>';
+  };
   A.refreshBrand = function () { var d = A.desa || {}; U.$$('.brand .lg').forEach(function (e) { e.innerHTML = U.logo(d); e.classList.toggle('has', !!d.logo); }); };
 
   // ---------- pencarian global ----------

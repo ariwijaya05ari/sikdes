@@ -106,17 +106,21 @@
   A.add('/a/penduduk', {
     auth: 1, roles: ST, menu: 'penduduk', title: 'Data Kependudukan', prefetch: PRE_ALL,
     render: function (el, ctx) {
-      var tab = ctx.qs.tab === 'kk' ? 'kk' : 'pend', data = null, g = null, F = { q: '', dusun: '', rw: '', jk: '', st: '', ktp: '', bs: '' };
+      var tab = ctx.qs.tab === 'kk' ? 'kk' : 'pend', data = null, g = null, F = { q: '', dusun: '', rw: '', rt: '', jk: '', st: '', ktp: '', bs: '' };
       var canAdd = ctx.user.role === 'admin';
       el.innerHTML = '<div class="ph"><div><h1>Data Kependudukan & Kartu Keluarga</h1><p>Pencarian dan penyaringan berjalan langsung di perangkat Anda — tanpa menunggu server.</p></div><div class="row w">' + (canAdd ? '<a class="btn" href="#/a/impor">' + ico('upload', 's') + ' Impor</a><button class="btn pri" id="add">' + ico('plus', 's') + ' Tambah Penduduk</button>' : '') + '<button class="btn" id="csv">' + ico('download', 's') + ' Ekspor CSV</button></div></div><div class="card p0"><div class="tabs" id="tb"><button class="tab" data-t="pend">Penduduk <span class="n" id="n1">…</span></button><button class="tab" data-t="kk">Kartu Keluarga <span class="n" id="n2">…</span></button></div><div class="toolbar" id="tl"></div><div id="gr"><div class="p">' + U.skel('l', 8) + '</div></div></div>';
+      function emptyTxt(w) {
+        if (ctx.user.role === 'rt' && data && !data.pr.length && !data.kr.length) return 'Belum ada ' + w + ' terdata di wilayah Anda (' + A.wilayahLabel(ctx.user).replace(/<[^>]*>/g, '') + '). Jika seharusnya ada, minta admin desa memeriksa isian RT/RW pada data KK dan pada akun Anda — keduanya harus sama.';
+        return 'Tidak ada ' + w + ' yang cocok';
+      }
       function reload() { API.get('pend.all', {}, { force: false, fresh: 0 }).then(function (d) { if (el.isConnected) { data = d; draw(); } }); }
       function tools() {
         var o = pendObjs(data), dus = {}; o.kk.forEach(function (k) { if (k.dusun) dus[k.dusun] = 1; });
-        var rws = {}; o.kk.forEach(function (k) { if (k.rw) rws[k.rw] = 1; });
-        $('#tl', el).innerHTML = '<div class="ig"><span>' + ico('search') + '</span><input class="inp" id="q" placeholder="' + (tab === 'kk' ? 'Cari No. KK, kepala keluarga, alamat…' : 'Cari nama, NIK, atau No. KK…') + '" value="' + esc(F.q) + '" aria-label="Cari"></div><select class="inp" id="fdus" aria-label="Dusun"><option value="">Semua dusun</option>' + U.opts(Object.keys(dus).sort(), F.dusun) + '</select><select class="inp" id="frw" aria-label="RW"><option value="">Semua RW</option>' + U.opts(Object.keys(rws).sort(), F.rw) + '</select>' +
+        var rws = {}, rts = {}; o.kk.forEach(function (k) { if (k.rw) rws[k.rw] = 1; if (k.rt) rts[k.rt] = 1; });
+        $('#tl', el).innerHTML = '<div class="ig"><span>' + ico('search') + '</span><input class="inp" id="q" placeholder="' + (tab === 'kk' ? 'Cari No. KK, kepala keluarga, alamat…' : 'Cari nama, NIK, atau No. KK…') + '" value="' + esc(F.q) + '" aria-label="Cari"></div>' + (Object.keys(dus).length > 1 ? '<select class="inp" id="fdus" aria-label="Dusun"><option value="">Semua dusun</option>' + U.opts(Object.keys(dus).sort(), F.dusun) + '</select>' : '') + (ctx.user.role !== 'rt' && Object.keys(rws).length > 1 ? '<select class="inp" id="frw" aria-label="RW"><option value="">Semua RW</option>' + U.opts(Object.keys(rws).sort(), F.rw) + '</select>' : '') + (ctx.user.role === 'rt' && !ctx.user.rt && Object.keys(rts).length > 1 ? '<select class="inp" id="frt" aria-label="RT"><option value="">Semua RT</option>' + U.opts(Object.keys(rts).sort(), F.rt) + '</select>' : '') +
           (tab === 'pend' ? '<select class="inp" id="fjk" aria-label="Jenis kelamin"><option value="">L/P</option><option value="L"' + (F.jk === 'L' ? ' selected' : '') + '>Laki-laki</option><option value="P"' + (F.jk === 'P' ? ' selected' : '') + '>Perempuan</option></select><select class="inp" id="fst" aria-label="Status">' + U.opts(U.ENUM.status_kependudukan, F.st, 'Semua status') + '</select><select class="inp" id="fktp" aria-label="KTP-el">' + U.opts(['Aktif', 'Belum Rekam', 'Tidak Wajib'], F.ktp, 'KTP-el') + '</select><select class="inp" id="fbs" aria-label="Bansos"><option value="">Bansos</option><option value="1"' + (F.bs === '1' ? ' selected' : '') + '>Penerima</option></select>' : '');
         var upd = U.debounce(function () { F.q = $('#q', el).value; g.refresh(); count(); }, 80); $('#q', el).oninput = upd;
-        ['fdus:dusun', 'frw:rw', 'fjk:jk', 'fst:st', 'fktp:ktp', 'fbs:bs'].forEach(function (x) { var p = x.split(':'), s = $('#' + p[0], el); if (s) s.onchange = function () { F[p[1]] = s.value; g.refresh(); count(); }; });
+        ['fdus:dusun', 'frw:rw', 'frt:rt', 'fjk:jk', 'fst:st', 'fktp:ktp', 'fbs:bs'].forEach(function (x) { var p = x.split(':'), s = $('#' + p[0], el); if (s) s.onchange = function () { F[p[1]] = s.value; g.refresh(); count(); }; });
       }
       function count() { var v = g && g.state.view.length; $(tab === 'kk' ? '#n2' : '#n1', el).textContent = U.num(v); }
       function draw() {
@@ -125,15 +129,15 @@
         tools();
         var q = function () { return F.q.trim().toLowerCase(); };
         if (tab === 'pend') {
-          g = U.grid($('#gr', el), { rows: o.rows, size: 25, empty: 'Tidak ada penduduk yang cocok',
-            filter: function (p) { var s = q(); return (!s || p._q.indexOf(s) >= 0) && (!F.dusun || p.dusun === F.dusun) && (!F.rw || p.rw === F.rw) && (!F.jk || p.jk === F.jk) && (!F.st || p.status_kependudukan === F.st) && (!F.ktp || p.ktp_status === F.ktp) && (!F.bs || p.bansos === 1); },
+          g = U.grid($('#gr', el), { rows: o.rows, size: 25, empty: emptyTxt('penduduk'),
+            filter: function (p) { var s = q(); return (!s || p._q.indexOf(s) >= 0) && (!F.dusun || p.dusun === F.dusun) && (!F.rw || p.rw === F.rw) && (!F.rt || p.rt === F.rt) && (!F.jk || p.jk === F.jk) && (!F.st || p.status_kependudukan === F.st) && (!F.ktp || p.ktp_status === F.ktp) && (!F.bs || p.bansos === 1); },
             cols: [{ k: 'nama', l: 'Nama', sort: 1, f: function (p) { return '<div class="row gap8"><div class="av" style="width:32px;height:32px;font-size:11px">' + esc(U.ini(p.nama)) + '</div><div><b>' + esc(p.nama) + '</b><div class="xs mut tnum">' + esc(p.nik) + '</div></div></div>'; } }, { k: 'no_kk', l: 'No. KK', f: function (p) { return '<span class="tnum xs">' + esc(p.no_kk) + '</span>'; } }, { k: 'jk', l: 'L/P', f: function (p) { return p.jk; } },
               { k: 'umur', l: 'Umur', sort: 1, v: function (p) { return U.umur(p.tgl_lahir); }, f: function (p) { return U.umur(p.tgl_lahir) + ' th'; } }, { k: 'hubungan', l: 'Hubungan' }, { k: 'rt', l: 'RT/RW · Dusun', f: function (p) { return esc(p.rt) + '/' + esc(p.rw) + ' · ' + esc(p.dusun); } }, { k: 'status_kependudukan', l: 'Status', f: function (p) { return U.badge(p.status_kependudukan) + (p.bansos ? ' <span class="bdg gd" title="Penerima bansos">' + ico('heart', 's') + '</span>' : ''); } }, { k: 'ktp_status', l: 'KTP-el', f: function (p) { return U.badge(p.ktp_status === 'Aktif' ? 'Aktif' : p.ktp_status === 'Belum Rekam' ? 'Menunggu' : 'Tetap', p.ktp_status); } }],
             onRow: function (p) { openPend(p.nik, reload); }, onDraw: count });
         } else {
           var kepala = function (k) { var x = o.byNik[k.kepala_nik]; return x ? x.nama : '–'; }, jiwa = function (k) { return (o.byKk[k.no_kk] || []).filter(aktif).length; };
-          g = U.grid($('#gr', el), { rows: o.kk, size: 25, empty: 'Tidak ada KK yang cocok',
-            filter: function (k) { var s = q(); return (!s || (k.no_kk + ' ' + kepala(k) + ' ' + k.alamat).toLowerCase().indexOf(s) >= 0) && (!F.dusun || k.dusun === F.dusun) && (!F.rw || k.rw === F.rw); },
+          g = U.grid($('#gr', el), { rows: o.kk, size: 25, empty: emptyTxt('KK'),
+            filter: function (k) { var s = q(); return (!s || (k.no_kk + ' ' + kepala(k) + ' ' + k.alamat).toLowerCase().indexOf(s) >= 0) && (!F.dusun || k.dusun === F.dusun) && (!F.rw || k.rw === F.rw) && (!F.rt || k.rt === F.rt); },
             cols: [{ k: 'no_kk', l: 'No. KK', sort: 1, f: function (k) { return '<b class="tnum">' + esc(k.no_kk) + '</b>'; } }, { k: 'kepala', l: 'Kepala keluarga', v: kepala, sort: 1, f: function (k) { return esc(kepala(k)); } }, { k: 'alamat', l: 'Alamat' }, { k: 'rt', l: 'RT/RW', f: function (k) { return esc(k.rt) + '/' + esc(k.rw); } }, { k: 'dusun', l: 'Dusun' }, { k: 'j', l: 'Jiwa', cls: 'num', v: jiwa, sort: 1, f: function (k) { return jiwa(k); } }, { k: 'penghasilan', l: 'Penghasilan', cls: 'num', f: function (k) { return k.penghasilan ? U.rp(k.penghasilan) : '–'; } }, { k: 'kondisi_rumah', l: 'Rumah', f: function (k) { return k.kondisi_rumah ? U.badge(k.kondisi_rumah === 'Layak' ? 'Layak' : k.kondisi_rumah === 'Tidak Layak' ? 'Tidak Layak' : 'Dipertimbangkan', k.kondisi_rumah) : '–'; } }],
             onRow: function (k) { openKk(k.no_kk, reload); }, onDraw: count });
         }

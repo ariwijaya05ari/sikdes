@@ -223,3 +223,4 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 
 /* logo desa unggahan */
 .brand .lg.has{background:#fff;padding:3px}.lgimg{width:100%;height:100%;object-fit:contain;display:block;border-radius:6px}
+.note.scope{margin-bottom:14px;align-items:flex-start}.note.scope b{font-weight:700}
