@@ -201,7 +201,7 @@
     w.addEventListener('hashchange', route);
     if (A.user) { idlePrefetch(); } else API.warm('pub');
     route();
-    if (A.user) { API.get('auth.me', {}).then(function (d) { A.user = d.user; A.desa = d.desa; API.S.user = d.user; API.S.desa = d.desa; }, function () { }); }
+    if (A.user) { API.get('auth.me', {}, { fresh: 0 }).then(function (d) { A.user = d.user; A.desa = d.desa; API.S.user = d.user; API.S.desa = d.desa; API.save(); A.refreshBrand(); }, function () { }); }
   };
   A.ROLE_LBL = ROLE_LBL; A.MENU = MENU;
 })(window);
