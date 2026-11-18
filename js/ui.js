@@ -40,6 +40,8 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function ico(n, c) { return '<svg class="i' + (c ? ' ' + c : '') + '" viewBox="0 0 24 24" aria-hidden="true"><path d="' + (IC[n] || IC.info) + '"/></svg>'; }
 
+  /** Logo desa: gambar unggahan bila ada, ikon gedung bila belum */
+  function logoHtml(desa) { var l = desa && desa.logo; return /^data:image\/(png|jpeg|webp);base64,/.test(l || '') ? '<img src="' + l + '" alt="Logo desa" class="lgimg">' : ico('bld', 'l'); }
   var BLN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], BLN_F = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   function tgl(d, full) { if (!d) return '–'; var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d); if (!m) return esc(d); return (+m[3]) + ' ' + (full ? BLN_F : BLN)[+m[2] - 1] + ' ' + m[1]; }
   function tglJam(d) { var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(d || ''); return m ? tgl(d) + ', ' + m[4] + '.' + m[5] : tgl(d); }
@@ -214,5 +216,5 @@
   function copy(text) { return (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { ok('Disalin ke clipboard.'); }, function () { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok('Disalin.'); } catch (e) { } t.remove(); }); }
   function readFileAsB64(file) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1]); }; r.onerror = rej; r.readAsDataURL(file); }); }
 
-  w.UI = { esc: esc, ico: ico, tgl: tgl, tglJam: tglJam, rp: rp, num: num, umur: umur, ini: ini, mask: mask, pct: pct, debounce: debounce, $: $, $$: $$, badge: badge, ENUM: ENUM, opts: opts, toast: toast, ok: ok, er: er, modal: modal, confirm: confirmBox, busy: busy, formObj: formObj, field: field, inp: inp, sel: sel, grid: grid, hbars: hbars, donut: donut, line: line, skel: skel, download: download, toCSV: toCSV, parseCSV: parseCSV, readXlsx: readXlsx, printHtml: printHtml, copy: copy, b64: readFileAsB64, BLN_F: BLN_F, PAL: PAL };
+  w.UI = { logo: logoHtml, esc: esc, ico: ico, tgl: tgl, tglJam: tglJam, rp: rp, num: num, umur: umur, ini: ini, mask: mask, pct: pct, debounce: debounce, $: $, $$: $$, badge: badge, ENUM: ENUM, opts: opts, toast: toast, ok: ok, er: er, modal: modal, confirm: confirmBox, busy: busy, formObj: formObj, field: field, inp: inp, sel: sel, grid: grid, hbars: hbars, donut: donut, line: line, skel: skel, download: download, toCSV: toCSV, parseCSV: parseCSV, readXlsx: readXlsx, printHtml: printHtml, copy: copy, b64: readFileAsB64, BLN_F: BLN_F, PAL: PAL };
 })(window);

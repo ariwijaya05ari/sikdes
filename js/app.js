@@ -102,7 +102,7 @@
       h += '<a href="#' + m.p + '" data-m="' + m.id + '" data-p="' + m.p + '">' + ico(m.i) + '<span>' + esc(m.l) + '</span>' + (m.badge ? '<span class="cnt hide" data-b="' + m.badge + '"></span>' : '') + '</a>';
     });
     var bn = u.role === 'warga' ? '<nav class="bnav" aria-label="Menu utama">' + items.filter(function (m) { return m.bn; }).map(function (m) { return '<a href="#' + m.p + '" data-m="' + m.id + '" data-p="' + m.p + '">' + ico(m.i, 'l') + '<span>' + esc(m.l.replace('Profil & Keamanan', 'Profil').replace('Data Keluarga', 'Keluarga').replace('Ajukan Surat', 'Ajukan').replace('Lacak Surat', 'Surat')) + '</span></a>'; }).join('') + '</nav>' : '';
-    A.root.innerHTML = '<div class="shell"><aside class="side" id="side"><div class="brand"><div class="lg">' + ico('bld', 'l') + '</div><div><b>SIPAKDES</b><span>' + esc(desa.nama_desa || 'Desa') + ', ' + esc((desa.kabupaten || '').replace(/^Kab\.?\s*/i, 'Kab. ')) + '</span></div></div><nav class="nav" aria-label="Navigasi">' + h + '</nav><nav class="nav" style="flex:none;border-top:1px solid rgba(255,255,255,.08)"><a href="#" data-logout>' + ico('logout') + '<span>Keluar / Log Out</span></a></nav></aside>' +
+    A.root.innerHTML = '<div class="shell"><aside class="side" id="side"><div class="brand"><div class="lg' + (desa.logo ? ' has' : '') + '">' + U.logo(desa) + '</div><div><b>SIPAKDES</b><span>' + esc(desa.nama_desa || 'Desa') + ', ' + esc((desa.kabupaten || '').replace(/^Kab\.?\s*/i, 'Kab. ')) + '</span></div></div><nav class="nav" aria-label="Navigasi">' + h + '</nav><nav class="nav" style="flex:none;border-top:1px solid rgba(255,255,255,.08)"><a href="#" data-logout>' + ico('logout') + '<span>Keluar / Log Out</span></a></nav></aside>' +
       '<div class="main"><header class="top"><button class="ib burger" aria-label="Buka menu" id="burger">' + ico('menu', 'l') + '</button><div class="crumb"><span class="hide-m">' + esc(desa.nama_desa || 'Pemerintah Desa') + '</span>' + ico('chr', 's') + '<b id="crumb"></b></div>' +
       (u.role !== 'warga' ? '<div class="sch ig" style="position:relative"><span>' + ico('search') + '</span><input class="inp" id="gsearch" placeholder="Cari NIK, No. KK, atau nama warga…" autocomplete="off" aria-label="Pencarian global"><div id="gres" class="card hide" style="position:absolute;left:0;right:0;top:44px;max-height:360px;overflow:auto;z-index:50"></div></div>' : '<span class="grow"></span>') +
       '<button class="ib" id="bell" aria-label="Pemberitahuan">' + ico('bell') + '<span class="dot hide" id="belldot" style="position:absolute;margin:-12px 0 0 10px;background:var(--er)"></span></button>' +
@@ -163,6 +163,7 @@
     A.counts.verif = d.verifData || 0; paintBadges();
   }
   A.afterSummary = afterSummary; A.afterWarga = afterWarga; A.reroute = route;
+  A.refreshBrand = function () { var d = A.desa || {}; U.$$('.brand .lg').forEach(function (e) { e.innerHTML = U.logo(d); e.classList.toggle('has', !!d.logo); }); };
 
   // ---------- pencarian global ----------
   function bindSearch() {

@@ -59,17 +59,20 @@
     var paras = String(j.template || '').split(/\n+/).filter(function (x) { return x.trim(); }).map(function (x) {
       return '<p style="margin:0 0 8px;text-align:justify;text-indent:32px">' + fill(x, f) + '</p>';
     }).join('');
+    var logo = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+\/=]+$/.test(d.logo || '') ? d.logo : '';
     var kades = d.kepala_desa || 'Kepala Desa', nip = d.nip_kades ? '<div style="font-size:10pt">NIP. ' + esc(d.nip_kades) + '</div>' : '';
     var ttd = draft
       ? '<div style="height:78px;border:1px dashed #999;color:#999;font-size:9pt;text-align:center;line-height:78px;margin:6px auto;width:150px">Menunggu TTE</div>'
       : '<div style="margin:6px auto;width:96px">' + (c.qr || '') + '</div><div style="font-size:8pt;color:#333">Ditandatangani secara elektronik<br/>(pindai QR untuk verifikasi keaslian)</div>';
     var wm = draft ? '<div style="position:absolute;left:0;right:0;top:38%;text-align:center;font-size:64px;font-weight:700;color:rgba(0,0,0,0.07);transform:rotate(-28deg);letter-spacing:6px;pointer-events:none">DRAF — BELUM SAH</div>' : '';
     return '<div class="surat-doc" style="position:relative;box-sizing:border-box;font-family:\'Times New Roman\',Times,serif;font-size:12pt;line-height:1.45;color:#000;background:#fff;padding:34px 48px 40px;overflow:hidden">' + wm +
-      '<div style="text-align:center;border-bottom:3px double #000;padding-bottom:8px;margin-bottom:14px">' +
+      '<div style="border-bottom:3px double #000;padding-bottom:8px;margin-bottom:14px">' +
+      '<table style="width:100%;border-collapse:collapse"><tr>' + (logo ? '<td style="width:78px;vertical-align:middle;padding:0"><img src="' + logo + '" alt="Logo" style="width:70px;height:70px;object-fit:contain;display:block"></td>' : '') +
+      '<td style="text-align:center;vertical-align:middle;padding:0">' +
       '<div style="font-size:12pt;letter-spacing:1px">PEMERINTAH KABUPATEN ' + esc(up(d.kabupaten)) + '</div>' +
       '<div style="font-size:12pt;letter-spacing:1px">KECAMATAN ' + esc(up(d.kecamatan)) + '</div>' +
       '<div style="font-size:16pt;font-weight:700;letter-spacing:1px">' + esc(up(d.nama_desa)) + '</div>' +
-      '<div style="font-size:9pt">' + esc(d.alamat || '') + (d.telepon ? ' · Telp. ' + esc(d.telepon) : '') + (d.email_kantor ? ' · ' + esc(d.email_kantor) : '') + '</div></div>' +
+      '<div style="font-size:9pt">' + esc(d.alamat || '') + (d.telepon ? ' · Telp. ' + esc(d.telepon) : '') + (d.email_kantor ? ' · ' + esc(d.email_kantor) : '') + '</div></td>' + (logo ? '<td style="width:78px;padding:0"></td>' : '') + '</tr></table></div>' +
       '<div style="text-align:center;margin-bottom:12px"><div style="font-size:13pt;font-weight:700;text-decoration:underline">' + esc(up(j.nama || 'SURAT KETERANGAN')) + '</div>' +
       '<div>Nomor: ' + (s.nomor_surat ? esc(s.nomor_surat) : '………/………/………') + '</div></div>' +
       '<p style="margin:0 0 6px;text-align:justify;text-indent:32px">Yang bertanda tangan di bawah ini, Kepala Desa ' + esc(f.nama_desa) + ', Kecamatan ' + esc(f.kecamatan) + ', Kabupaten ' + esc(f.kabupaten) + ', menerangkan bahwa:</p>' +

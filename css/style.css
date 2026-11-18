@@ -220,3 +220,6 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 /* mobile: cegah luapan horizontal */
 .col,.grid>*,.grow{min-width:0}
 .steps{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.steps::-webkit-scrollbar{display:none}
+
+/* logo desa unggahan */
+.brand .lg.has{background:#fff;padding:3px}.lgimg{width:100%;height:100%;object-fit:contain;display:block;border-radius:6px}

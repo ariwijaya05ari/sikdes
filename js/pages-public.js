@@ -7,7 +7,7 @@
 
   function topbar(active, desa) {
     var u = A.user;
-    return '<header class="pubtop"><div class="in"><a href="#/" class="row gap8" style="color:#fff;text-decoration:none"><div class="brand" style="padding:0;border:0"><div class="lg" style="width:36px;height:36px">' + ico('bld', 'l') + '</div><div><b style="font-size:15px">SIPAKDES</b><span>' + esc((desa && desa.nama_desa) || 'Pemerintah Desa') + '</span></div></div></a>' +
+    return '<header class="pubtop"><div class="in"><a href="#/" class="row gap8" style="color:#fff;text-decoration:none"><div class="brand" style="padding:0;border:0"><div class="lg' + (desa && desa.logo ? ' has' : '') + '" style="width:36px;height:36px">' + U.logo(desa) + '</div><div><b style="font-size:15px">SIPAKDES</b><span>' + esc((desa && desa.nama_desa) || 'Pemerintah Desa') + '</span></div></div></a>' +
       '<nav aria-label="Navigasi publik"><a href="#/"' + (active === 'home' ? ' class="on"' : '') + '>Beranda</a><a href="#/" data-sc="layanan">Layanan</a><a href="#/pengumuman"' + (active === 'info' ? ' class="on"' : '') + '>Pengumuman</a><a href="#/verifikasi"' + (active === 'ver' ? ' class="on"' : '') + '>Cek Keaslian Surat</a>' +
       (u ? '<a class="btn gold sm" href="#' + A.home() + '">' + ico('dash', 's') + ' Buka Portal</a>' : '<a class="btn gold sm" href="#/masuk">Masuk / Portal Warga</a>') + '</nav></div></header>';
   }
@@ -105,7 +105,7 @@
   // ---------- Masuk ----------
   function authFrame(el, inner) {
     var d = A.desa || {};
-    el.innerHTML = '<div class="auth"><div class="l"><a href="#/" class="row gap8" style="color:#fff"><div class="brand" style="padding:0;border:0"><div class="lg">' + ico('bld', 'l') + '</div><div><b>SIPAKDES</b><span>' + esc(d.nama_desa || 'Pemerintah Desa') + '</span></div></div></a><div style="margin-top:auto"><h1>Portal Pelayanan Desa Digital</h1><p style="color:#CBD5E1;margin-top:12px;max-width:44ch" class="hide-m">Ajukan surat, pantau statusnya, lihat data keluarga, dan terima pengumuman desa — kapan saja, dari ponsel Anda.</p></div><div class="xs hide-m" style="color:#94A3B8">' + esc(d.alamat || '') + '</div></div><div class="r"><div class="fm">' + inner + '</div></div></div>';
+    el.innerHTML = '<div class="auth"><div class="l"><a href="#/" class="row gap8" style="color:#fff"><div class="brand" style="padding:0;border:0"><div class="lg' + (d.logo ? ' has' : '') + '">' + U.logo(d) + '</div><div><b>SIPAKDES</b><span>' + esc(d.nama_desa || 'Pemerintah Desa') + '</span></div></div></a><div style="margin-top:auto"><h1>Portal Pelayanan Desa Digital</h1><p style="color:#CBD5E1;margin-top:12px;max-width:44ch" class="hide-m">Ajukan surat, pantau statusnya, lihat data keluarga, dan terima pengumuman desa — kapan saja, dari ponsel Anda.</p></div><div class="xs hide-m" style="color:#94A3B8">' + esc(d.alamat || '') + '</div></div><div class="r"><div class="fm">' + inner + '</div></div></div>';
   }
   A.add('/masuk', {
     guest: true, title: 'Masuk', render: function (el, ctx) {

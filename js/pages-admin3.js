@@ -147,6 +147,28 @@
     }
   });
 
+
+  /** Perkecil logo di perangkat agar muat di database (≤ ~38 KB). Mengembalikan data URL. */
+  function logoDariFile(file) {
+    return new Promise(function (res, rej) {
+      if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return rej(new Error('Gunakan gambar PNG, JPG, atau WebP.'));
+      if (file.size > 8 * 1024 * 1024) return rej(new Error('Berkas terlalu besar (maks. 8 MB).'));
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('Gambar tidak dapat dibaca.')); };
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var tries = [[256, 'image/png'], [200, 'image/png'], [160, 'image/png'], [256, 'image/webp'], [200, 'image/webp'], [160, 'image/jpeg'], [128, 'image/jpeg'], [96, 'image/jpeg']];
+        for (var i = 0; i < tries.length; i++) {
+          var mx = tries[i][0], r = Math.min(1, mx / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * r)); c.height = Math.max(1, Math.round(img.height * r));
+          var g = c.getContext('2d'); if (tries[i][1] === 'image/jpeg') { g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); } g.drawImage(img, 0, 0, c.width, c.height);
+          var out = c.toDataURL(tries[i][1], 0.88); if (out.indexOf('data:' + tries[i][1]) === 0 && out.length <= 38000) return res(out);
+        }
+        rej(new Error('Gambar terlalu rumit untuk dijadikan logo kecil. Gunakan logo yang lebih sederhana.'));
+      };
+      img.src = url;
+    });
+  }
+
   // ================= PENGATURAN =================
   var SG = [['Identitas Desa', ['nama_desa', 'kecamatan', 'kabupaten', 'provinsi', 'alamat', 'telepon', 'whatsapp', 'email_kantor', 'tagline']], ['Pejabat & Layanan', ['kepala_desa', 'nip_kades', 'sekdes', 'jam_layanan', 'jam_istirahat', 'hotline_darurat']], ['Surat', ['format_nomor']], ['Bantuan Sosial', ['program_bansos']], ['Notifikasi', ['notif_email_aktif', 'notif_wa_aktif']], ['Alamat Aplikasi', ['url_frontend']]];
   var SL = { nama_desa: 'Nama desa', kecamatan: 'Kecamatan', kabupaten: 'Kabupaten', provinsi: 'Provinsi', alamat: 'Alamat kantor', telepon: 'Telepon', whatsapp: 'WhatsApp', email_kantor: 'Email kantor', tagline: 'Tagline', kepala_desa: 'Nama Kepala Desa', nip_kades: 'NIP/NIAP Kepala Desa', sekdes: 'Nama Sekretaris Desa', jam_layanan: 'Jam layanan', jam_istirahat: 'Jam istirahat', hotline_darurat: 'Hotline darurat', format_nomor: 'Format nomor surat', program_bansos: 'Program bantuan (pisah koma)', notif_email_aktif: 'Notifikasi email', notif_wa_aktif: 'Notifikasi WhatsApp', url_frontend: 'URL situs frontend (https://…)' };
@@ -160,7 +182,12 @@
       $('#tb', el).onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) { tab = b.dataset.t; show(); } };
       function tUmum() {
         A.V(pn, 'set.get', {}, function (d) {
-          var s = d.settings; pn.innerHTML = '<form id="f">' + SG.map(function (g) { return '<h3 class="mt16 mb8">' + g[0] + '</h3><div class="frm">' + g[1].map(function (k) { return k.indexOf('notif_') === 0 ? U.field(SL[k], U.sel(k, ['Ya', 'Tidak'], s[k])) : U.field(SL[k], U.inp(k, s[k]), { cls: ['alamat', 'tagline', 'program_bansos', 'url_frontend', 'format_nomor'].indexOf(k) >= 0 ? 'full' : '', hint: k === 'format_nomor' ? 'Token: {klas} {urut} {tahun} {bulan} {kode}' : k === 'url_frontend' ? 'Dipakai pada tautan verifikasi QR di surat.' : '' }); }).join('') + '</div>'; }).join('') + '<div class="mt24"><button class="btn pri" type="submit">Simpan Pengaturan</button></div></form>';
+          var s = d.settings; pn.innerHTML = '<h3 class="mb8 mt8">Logo Desa</h3><div class="card p" style="box-shadow:none"><div class="row w" style="gap:20px;align-items:center"><div id="lgp" style="width:96px;height:96px;border:1px dashed var(--bd);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden">' + (s.logo ? '<img src="' + s.logo + '" alt="Logo desa" style="max-width:100%;max-height:100%">' : '<span class="xs mut">Belum ada</span>') + '</div><div class="grow"><p class="sm mut">Tampil di menu samping, halaman masuk, beranda publik, dan kop surat. Format PNG/JPG/WebP — latar transparan (PNG) paling baik. Gambar diperkecil otomatis di perangkat Anda.</p><div class="row w gap8 mt8"><label class="btn" for="lgf" style="cursor:pointer">' + ico('upload', 's') + ' Pilih gambar…</label><input type="file" id="lgf" accept="image/png,image/jpeg,image/webp" hidden><button class="btn pri" id="lgs" disabled>Simpan Logo</button>' + (s.logo ? '<button class="btn dan" id="lgd">Hapus Logo</button>' : '') + '</div></div></div></div><form id="f">' + SG.map(function (g) { return '<h3 class="mt16 mb8">' + g[0] + '</h3><div class="frm">' + g[1].map(function (k) { return k.indexOf('notif_') === 0 ? U.field(SL[k], U.sel(k, ['Ya', 'Tidak'], s[k])) : U.field(SL[k], U.inp(k, s[k]), { cls: ['alamat', 'tagline', 'program_bansos', 'url_frontend', 'format_nomor'].indexOf(k) >= 0 ? 'full' : '', hint: k === 'format_nomor' ? 'Token: {klas} {urut} {tahun} {bulan} {kode}' : k === 'url_frontend' ? 'Dipakai pada tautan verifikasi QR di surat.' : '' }); }).join('') + '</div>'; }).join('') + '<div class="mt24"><button class="btn pri" type="submit">Simpan Pengaturan</button></div></form>';
+          var pend = '';
+          function simpanLogo(val, btn, msg) { return U.busy(btn, function () { return API.write('set.save', { values: { logo: val } }).then(function () { A.desa = A.desa || {}; A.desa.logo = val; if (API.S) { API.S.desa = A.desa; API.save && API.save(); } API.invalidate(); A.refreshBrand && A.refreshBrand(); U.ok(msg); tUmum(); }); }); }
+          $('#lgf', pn).onchange = function (e) { var f = e.target.files[0]; if (!f) return; logoDariFile(f).then(function (url) { pend = url; $('#lgp', pn).innerHTML = '<img src="' + url + '" alt="Pratinjau logo" style="max-width:100%;max-height:100%">'; $('#lgs', pn).disabled = false; }, function (er) { U.toast(er.message, 'er'); }); };
+          $('#lgs', pn).onclick = function () { if (pend) simpanLogo(pend, this, 'Logo desa diperbarui.'); };
+          var ld = $('#lgd', pn); if (ld) ld.onclick = function () { var b = this; U.confirm('Hapus logo desa?', { danger: 1, ok: 'Hapus' }).then(function (y) { if (y) simpanLogo('', b, 'Logo dihapus.'); }); };
           $('#f', pn).onsubmit = function (e) { e.preventDefault(); U.busy($('[type=submit]', pn), function () { return API.write('set.save', { values: U.formObj($('#f', pn)) }).then(function () { U.ok('Pengaturan disimpan.'); }); }); };
         }, { fresh: 5 });
       }
